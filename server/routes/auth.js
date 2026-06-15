@@ -27,7 +27,7 @@ router.post('/register', async (req, res) => {
       name,
       email,
       password,
-      isVerified: true, 
+      isVerified: false, 
       verificationToken,
       verificationExpires,
     });

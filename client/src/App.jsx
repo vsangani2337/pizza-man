@@ -79,8 +79,8 @@ const App = () => (
         autoClose={3000}
         theme="dark"
         closeButton={<CloseButton />} // Passing the component directly
-        newestOnTop={true}
-        pauseOnHover={true}
+        newestOnTop
+        pauseOnHover
       />
     </AuthProvider>
   </Router>

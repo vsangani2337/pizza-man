@@ -18,10 +18,10 @@ const Login = () => {
     try {
       const { data } = await loginUser({ email, password });
       login(data.token, data.user);
-      toast.success('Welcome back!');
+      toast.success('Welcome back!', { autoClose: 2000 });
       navigate(data.user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
+      toast.error(err.response?.data?.message || 'Login failed' , { autoClose: 2000 });
     } finally {
       setLoading(false);
     }
