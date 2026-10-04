@@ -1,6 +1,10 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const { rateLimit } = require('express-rate-limit');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
@@ -8,83 +12,127 @@ const pizzaRoutes = require('./routes/pizza');
 const orderRoutes = require('./routes/order');
 const paymentRoutes = require('./routes/payment');
 const inventoryRoutes = require('./routes/inventory');
+const productRoutes = require('./routes/products');
+const settingsRoutes = require('./routes/settings');
+const analyticsRoutes = require('./routes/analytics');
+const userRoutes = require('./routes/users');
+const { ensureSeedData } = require('./seed/seed');
 
 const app = express();
 
-// Middleware
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+// --- Startup configuration checks -----------------------------------------
+if (!process.env.JWT_SECRET) {
+  console.error('❌ JWT_SECRET is not set. Add it to server/.env — the server cannot start without it.');
+  process.exit(1);
+}
+if (process.env.JWT_SECRET.length < 32) {
+  console.warn('⚠️  JWT_SECRET is shorter than 32 characters. Use a long random string before deploying.');
+}
+if (!process.env.MONGO_URI) {
+  console.error('❌ MONGO_URI is not set. Add it to server/.env — the server cannot start without it.');
+  process.exit(1);
+}
 
-// Routes
+// --- Middleware ------------------------------------------------------------
+// Reflect the configured frontend origin(s); never credentials (we use Bearer tokens).
+const allowedOrigins = (process.env.CORS_ORIGINS || process.env.CLIENT_URL || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+  credentials: false,
+}));
+
+if (process.env.TRUST_PROXY === 'true' || process.env.TRUST_PROXY === '1') {
+  app.set('trust proxy', 1);
+}
+
+// Security headers (API-only responses; Razorpay script lives on the client origin).
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
+
+// Strip `$`/`.` operators from user input (NoSQL injection protection).
+app.use(mongoSanitize());
+
+// Coarse global throttle; auth/payment routes have their own stricter limits.
+if (process.env.NODE_ENV !== 'test') {
+  app.use('/api', rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 1000,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { message: 'Too many requests. Please slow down and try again shortly.' },
+  }));
+}
+
+app.use(express.json({ limit: '1mb' }));
+app.disable('x-powered-by');
+
+// --- Routes ----------------------------------------------------------------
 app.use('/api/auth', authRoutes);
 app.use('/api/pizza', pizzaRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
+// --- Error handling --------------------------------------------------------
+app.use((req, res) => {
+  res.status(404).json({ message: 'Endpoint not found.' });
+});
+
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ message: 'Invalid JSON body.' });
+  }
+  console.error('Unhandled error:', err);
+  const message =
+    process.env.NODE_ENV === 'production'
+      ? 'Something went wrong on our end.'
+      : err.message || 'Something went wrong on our end.';
+  res.status(err.status || 500).json({ message });
+});
+
 const PORT = process.env.PORT || 5001;
 
 const start = async () => {
-  await connectDB();
+  try {
+    await connectDB();
+    await ensureSeedData();
 
-  // Auto-seed on first run
-  const User = require('./models/User');
-  const Inventory = require('./models/Inventory');
-  
-  const adminExists = await User.findOne({ email: 'admin@pizza.com' });
-  if (!adminExists) {
-    await User.create({ name: 'Admin', email: 'admin@pizza.com', password: 'Admin@123', role: 'admin', isVerified: true });
-    console.log('Admin seeded: admin@pizza.com / Admin@123');
-  }
-  
-  const invCount = await Inventory.countDocuments();
-  if (invCount === 0) {
-    // COMMENTED OUT: This file likely contains a separate app.listen() or connection hook 
-    // that conflicts with this server instance during watches/restarts.
-    // const seed = require('./seed/seed');
-    
-    const items = [
-      { category: 'base', name: 'Thin Crust', quantity: 100, price: 120, image: '🫓' },
-      { category: 'base', name: 'Thick Crust', quantity: 100, price: 140, image: '🍞' },
-      { category: 'base', name: 'Stuffed Crust', quantity: 100, price: 180, image: '🥐' },
-      { category: 'base', name: 'Gluten-Free', quantity: 100, price: 200, image: '🌾' },
-      { category: 'base', name: 'Whole Wheat', quantity: 100, price: 150, image: '🌿' },
-      { category: 'sauce', name: 'Marinara', quantity: 100, price: 40, image: '🍅' },
-      { category: 'sauce', name: 'BBQ', quantity: 100, price: 50, image: '🔥' },
-      { category: 'sauce', name: 'Alfredo', quantity: 100, price: 60, image: '🥛' },
-      { category: 'sauce', name: 'Pesto', quantity: 100, price: 55, image: '🌿' },
-      { category: 'sauce', name: 'Hot Sauce', quantity: 100, price: 45, image: '🌶️' },
-      { category: 'cheese', name: 'Mozzarella', quantity: 100, price: 80, image: '🧀' },
-      { category: 'cheese', name: 'Cheddar', quantity: 100, price: 90, image: '🧀' },
-      { category: 'cheese', name: 'Parmesan', quantity: 100, price: 100, image: '🧀' },
-      { category: 'cheese', name: 'Gouda', quantity: 100, price: 110, image: '🧀' },
-      { category: 'cheese', name: 'Vegan Cheese', quantity: 100, price: 120, image: '🌱' },
-      { category: 'veggie', name: 'Mushrooms', quantity: 100, price: 30, image: '🍄' },
-      { category: 'veggie', name: 'Bell Peppers', quantity: 100, price: 25, image: '🫑' },
-      { category: 'veggie', name: 'Onions', quantity: 100, price: 20, image: '🧅' },
-      { category: 'veggie', name: 'Olives', quantity: 100, price: 35, image: '🫒' },
-      { category: 'veggie', name: 'Tomatoes', quantity: 100, price: 25, image: '🍅' },
-      { category: 'veggie', name: 'Jalapeños', quantity: 100, price: 30, image: '🌶️' },
-      { category: 'veggie', name: 'Spinach', quantity: 100, price: 25, image: '🥬' },
-      { category: 'veggie', name: 'Corn', quantity: 100, price: 20, image: '🌽' },
-      { category: 'meat', name: 'Pepperoni', quantity: 100, price: 60, image: '🥓' },
-      { category: 'meat', name: 'Chicken', quantity: 100, price: 70, image: '🍗' },
-      { category: 'meat', name: 'Sausage', quantity: 100, price: 65, image: '🌭' },
-      { category: 'meat', name: 'Bacon', quantity: 100, price: 75, image: '🥓' },
-    ];
-    await Inventory.insertMany(items);
-    console.log(`Seeded ${items.length} inventory items.`);
-  }
+    const server = app.listen(PORT, () => {
+      console.log(`🍕 Server running on port ${PORT}`);
+    });
 
-  app.listen(PORT, () => {
-    console.log(`🍕 Server running on port ${PORT}`);
-  });
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} is already in use. Stop the other process or change PORT in server/.env.`);
+      } else {
+        console.error('❌ Server failed to start:', error.message);
+      }
+      process.exit(1);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error.message);
+    process.exit(1);
+  }
 };
 
-start();
+if (require.main === module) {
+  start();
+}
+
+module.exports = app;
 
 // Handle clean process termination (helps prevent port locking during watch restarts)
 process.on('SIGINT', () => {

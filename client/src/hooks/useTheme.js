@@ -1,20 +1,3 @@
-import { useEffect, useState } from 'react';
-
-export const useTheme = () => {
-  const [theme, setTheme] = useState('dark');
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    setTheme(savedTheme);
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
-
-  return { theme, toggleTheme };
-};
+// Single source of truth for the theme lives in ThemeContext so the
+// desktop and mobile toggles always stay in sync.
+export { useTheme } from '../context/ThemeContext';

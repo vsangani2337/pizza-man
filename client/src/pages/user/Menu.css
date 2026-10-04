@@ -1,0 +1,222 @@
+/* ==========================================================================
+   Menu page — header, category rail, filters, product grid, drinks, CTA
+   ========================================================================== */
+.menu-header { align-items: center; }
+
+.menu-header-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 14px 22px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  line-height: 1.2;
+}
+
+.menu-header-stat strong {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  color: var(--color-primary);
+}
+
+.menu-header-stat span { font-size: var(--fs-2xs); color: var(--color-text-muted); font-weight: 600; }
+
+/* --- Category rail -------------------------------------------------------- */
+.menu-categories {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-5);
+}
+
+.menu-segmented {
+  max-width: 100%;
+  overflow-x: auto;
+  justify-content: flex-start;
+  -webkit-overflow-scrolling: touch;
+}
+
+.menu-segmented .segment { flex-shrink: 0; }
+
+.segment-highlight {
+  background: linear-gradient(135deg, var(--color-secondary-soft), var(--color-primary-soft));
+  border: 1px dashed color-mix(in srgb, var(--color-secondary) 60%, transparent);
+  color: var(--color-primary);
+}
+
+.segment-highlight:hover { color: var(--color-primary-strong); border-style: solid; }
+
+/* --- Controls ------------------------------------------------------------- */
+.menu-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-4);
+}
+
+.menu-search-field { flex: 1 1 260px; min-width: 0; }
+.menu-search-field input { border-radius: var(--radius-pill); }
+
+.menu-select { display: flex; }
+.menu-select select { min-width: 190px; border-radius: var(--radius-pill); }
+
+.menu-filter-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.menu-price-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+}
+
+.menu-price-filter label {
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.menu-price-filter output {
+  font-size: var(--fs-xs);
+  font-weight: 800;
+  color: var(--color-primary);
+  min-width: 56px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.menu-price-filter input[type='range'] {
+  width: clamp(90px, 14vw, 170px);
+  min-height: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.menu-price-filter input[type='range']:focus { box-shadow: none; }
+
+.menu-result-count {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  font-weight: 600;
+  margin-bottom: var(--space-5);
+}
+
+/* --- Sections ------------------------------------------------------------- */
+.menu-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+/* --- Drinks --------------------------------------------------------------- */
+.drink-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: var(--space-5);
+}
+
+.drink-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+
+.drink-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+.drink-card-image-wrap {
+  aspect-ratio: 4 / 3;
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+
+.drink-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--ease-out);
+}
+
+.drink-card:hover .drink-card-image { transform: scale(1.06); }
+
+.drink-card-fallback {
+  display: grid;
+  place-items: center;
+  font-size: 54px;
+  object-fit: contain;
+}
+
+.drink-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--space-4);
+  align-items: flex-start;
+}
+
+.drink-card-body h3 { font-size: var(--fs-sm); font-family: var(--font-body); font-weight: 700; }
+.drink-card-body .btn { width: 100%; }
+
+/* --- Builder CTA ---------------------------------------------------------- */
+.menu-builder-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  margin-top: var(--space-9);
+  padding: clamp(22px, 3.5vw, 36px);
+  border-radius: var(--radius-2xl);
+  background:
+    radial-gradient(60% 140% at 92% 10%, rgba(242, 160, 61, 0.28), transparent 60%),
+    linear-gradient(135deg, var(--color-surface), var(--color-surface-2));
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+}
+
+.menu-builder-cta > div { display: flex; flex-direction: column; gap: 6px; max-width: 60ch; }
+
+/* --- Responsive ----------------------------------------------------------- */
+@media (max-width: 900px) {
+  .menu-categories { justify-content: flex-start; }
+  .menu-segmented { width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .menu-header-stat { display: none; }
+  .menu-controls { padding: var(--space-3); gap: var(--space-2); border-radius: var(--radius-lg); }
+  .menu-search-field { flex-basis: 100%; }
+  .menu-select { flex: 1; }
+  .menu-select select { min-width: 0; width: 100%; }
+  .menu-price-filter { width: 100%; justify-content: space-between; }
+  .menu-price-filter input[type='range'] { flex: 1; }
+  .drink-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-4); }
+  .menu-builder-cta { text-align: center; align-items: stretch; }
+  .menu-builder-cta .btn { width: 100%; }
+}

@@ -1,0 +1,275 @@
+/* ==========================================================================
+   Admin shell — fixed sidebar (drawer on mobile) + sticky top bar.
+   Deliberately denser and more "control room" than the storefront UI,
+   while still using the same Pizza Man tokens.
+   ========================================================================== */
+.admin-shell {
+  min-height: 100vh;
+  background: var(--color-background);
+  background-image:
+    radial-gradient(760px 380px at 100% 0%, rgba(224, 81, 47, 0.07), transparent 60%),
+    radial-gradient(600px 420px at 0% 100%, rgba(242, 160, 61, 0.06), transparent 62%);
+}
+
+/* --- Sidebar -------------------------------------------------------------- */
+.admin-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 200;
+  width: var(--admin-sidebar);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.admin-sidebar-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.admin-badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.admin-sidebar-close { display: none; margin-left: auto; }
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.admin-nav-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding: 0 12px var(--space-2);
+}
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 11px 13px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.admin-nav-link:hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+.admin-nav-link.is-active {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-strong));
+  border-color: transparent;
+  color: var(--color-text-on-primary);
+  box-shadow: var(--shadow-primary);
+}
+
+.admin-nav-icon {
+  width: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.admin-sidebar-foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.admin-sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+}
+
+.admin-sidebar-user-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-sidebar-user-text strong {
+  font-size: var(--fs-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-sidebar-user-text small {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Main column ---------------------------------------------------------- */
+.admin-main {
+  margin-left: var(--admin-sidebar);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 68px;
+  padding: 10px var(--space-7);
+  background: color-mix(in srgb, var(--color-background) 84%, transparent);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border-bottom: 1px solid transparent;
+  transition: all var(--transition);
+}
+
+.admin-topbar.is-scrolled {
+  border-bottom-color: var(--color-border);
+  box-shadow: 0 8px 26px rgba(var(--shadow-color), 0.07);
+}
+
+.admin-burger { display: none; }
+
+.admin-topbar-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.admin-topbar-title strong {
+  font-family: var(--font-heading);
+  font-size: var(--fs-h4);
+  letter-spacing: -0.02em;
+}
+
+.admin-topbar-title span {
+  font-size: var(--fs-2xs);
+  color: var(--color-text-muted);
+}
+
+.admin-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.admin-topbar-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 15px;
+  min-height: 40px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  transition: all var(--transition-fast);
+}
+
+.admin-topbar-action:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.admin-content {
+  flex: 1;
+  padding: var(--space-6) var(--space-7) var(--space-9);
+}
+
+/* Pages are already framed by the shell — neutralise storefront page chrome. */
+.admin-content .page {
+  padding-top: 0 !important;
+  padding-bottom: 0;
+  min-height: auto;
+  animation: none;
+}
+
+.admin-content .container,
+.admin-content .container-wide {
+  max-width: 100%;
+  padding-inline: 0;
+}
+
+.admin-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  background: var(--color-overlay);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition), visibility var(--transition);
+}
+
+.admin-backdrop.is-open { opacity: 1; visibility: visible; }
+
+/* --- Responsive ----------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 0.34s var(--ease-out), visibility 0.34s;
+    box-shadow: none;
+    width: min(288px, 86vw);
+  }
+
+  .admin-sidebar.is-open {
+    transform: translateX(0);
+    visibility: visible;
+    box-shadow: var(--shadow-xl);
+    z-index: 210;
+  }
+
+  .admin-sidebar-close { display: inline-flex; }
+  .admin-main { margin-left: 0; }
+  .admin-burger { display: inline-flex; }
+}
+
+@media (max-width: 768px) {
+  .admin-topbar { padding-inline: var(--space-4); }
+  .admin-topbar-title span { display: none; }
+  .admin-topbar-action span { display: none; }
+  .admin-topbar-action { padding-inline: 12px; }
+  .admin-content { padding: var(--space-5) var(--space-4) var(--space-8); }
+}

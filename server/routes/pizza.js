@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Inventory = require('../models/Inventory');
+const Product = require('../models/Product');
+const ProductCategory = require('../models/ProductCategory');
 const auth = require('../middleware/auth');
+const { getSizes } = require('../config/sizes');
 
 const buildCategoryRegex = (aliases) => new RegExp(`^(${aliases.join('|')})$`, 'i');
 
@@ -9,6 +12,43 @@ const findByCategory = async (aliases) => {
   const categoryRegex = buildCategoryRegex(aliases);
   return Inventory.find({ category: categoryRegex }).sort({ name: 1 });
 };
+
+// @route   GET /api/pizza/menu
+// @desc    Everything the customer-facing UI needs in a single request
+router.get('/menu', auth, async (req, res) => {
+  try {
+    const [bases, sauces, cheeses, veggies, meats, drinks, addons, products, categories] = await Promise.all([
+      findByCategory(['base', 'bases', 'crust', 'crusts']),
+      findByCategory(['sauce', 'sauces']),
+      findByCategory(['cheese', 'cheeses']),
+      findByCategory(['veggie', 'veggies', 'vegetable', 'vegetables']),
+      findByCategory(['meat', 'meats', 'non-veg', 'nonveg']),
+      findByCategory(['drink', 'drinks', 'beverage', 'beverages']),
+      findByCategory(['addon', 'addons', 'extra', 'extras']),
+      Product.find({ available: true })
+        .sort({ name: 1 })
+        .populate('categoryId', 'name slug'),
+      ProductCategory.find({ active: true }).sort({ sortOrder: 1, name: 1 }),
+    ]);
+    res.json({
+      bases, sauces, cheeses, veggies, meats, drinks, addons, products, categories,
+      sizes: getSizes(),
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// @route   GET /api/pizza/drinks
+// @desc    Get all cold drinks
+router.get('/drinks', auth, async (req, res) => {
+  try {
+    const drinks = await findByCategory(['drink', 'drinks', 'beverage', 'beverages']);
+    res.json(drinks);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error.' });
+  }
+});
 
 // @route   GET /api/pizza/bases
 // @desc    Get all pizza bases

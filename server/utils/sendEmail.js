@@ -5,7 +5,7 @@ const sendEmail = async ({ to, subject, html }) => {
     const transporter = await createTransporter();
 
     const info = await transporter.sendMail({
-      from: `"Pizzara 🍕" <${process.env.EMAIL_USER}>`,
+      from: `"Pizza Man 🍕" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html,

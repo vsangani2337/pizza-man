@@ -17,7 +17,11 @@ export const AuthProvider = ({ children }) => {
           const { data } = await getMe();
           setUser(data.user);
         } catch {
-          logout();
+          // Token is invalid/expired — clear it inline (logout is declared below).
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setToken(null);
+          setUser(null);
         }
       }
       setLoading(false);

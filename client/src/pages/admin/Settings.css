@@ -1,0 +1,189 @@
+/* ==========================================================================
+   Admin › Store settings — grouped settings cards, switch rows,
+   sticky save bar. All colours/space/radii come from design tokens.
+   ========================================================================== */
+
+.admin-settings .page-header {
+  margin-bottom: 0;
+}
+
+.admin-settings .settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.admin-settings .settings-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.admin-settings .section-card {
+  margin-bottom: 0;
+}
+
+/* --- Card heads ----------------------------------------------------------- */
+.admin-settings .settings-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-settings .settings-card-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, transparent);
+  font-size: var(--fs-h4);
+  line-height: 1;
+}
+
+.admin-settings .settings-card-head-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-settings .settings-card-head h2 {
+  font-size: var(--fs-h4);
+  margin-bottom: 3px;
+}
+
+/* --- Fields --------------------------------------------------------------- */
+.admin-settings .form-grid {
+  gap: var(--space-5) var(--space-4);
+}
+
+/* Single-field groups read better at a comfortable input width. */
+.admin-settings .settings-card-single .form-grid {
+  max-width: 420px;
+}
+
+.admin-settings .form-field .form-hint {
+  font-weight: 500;
+}
+
+/* --- Switch rows ---------------------------------------------------------- */
+.admin-settings .switch-row {
+  gap: var(--space-5);
+  padding: var(--space-4) 0;
+}
+
+.admin-settings .switch-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 62ch;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Native checkbox restyled as a pill switch — keeps focus + semantics. */
+.admin-settings .switch-row input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+  height: 30px;
+  min-height: 30px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-3);
+  border: 1.5px solid var(--color-border-strong);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+  cursor: pointer;
+}
+
+.admin-settings .switch-row input[type='checkbox']::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: 23px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-fast);
+}
+
+.admin-settings .switch-row input[type='checkbox']:checked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.admin-settings .switch-row input[type='checkbox']:checked::after {
+  transform: translateX(22px);
+}
+
+.admin-settings .switch-row input[type='checkbox']:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* --- Save bar ------------------------------------------------------------- */
+.admin-settings .settings-footer {
+  position: sticky;
+  bottom: var(--space-4);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.admin-settings .settings-error {
+  padding: var(--space-3) var(--space-4);
+  background: var(--error-soft);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-md);
+}
+
+.admin-settings .settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* --- Responsive ----------------------------------------------------------- */
+@media (max-width: 640px) {
+  .admin-settings .settings-card-head {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-settings .settings-footer {
+    position: static;
+    padding: var(--space-4);
+  }
+
+  .admin-settings .settings-actions {
+    flex-direction: column;
+  }
+  .admin-settings .settings-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-settings .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

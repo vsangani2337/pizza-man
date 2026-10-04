@@ -1,90 +1,143 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { CartProvider } from './context/CartContext';
+import { useTheme } from './hooks/useTheme';
+import ErrorBoundary from './components/ErrorBoundary';
+import { LoadingState } from './components/StateViews';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import AdminShell from './components/admin/AdminShell';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import VerifyEmail from './pages/auth/VerifyEmail';
-import ForgotPassword from './pages/auth/ForgotPassword';
-import ResetPassword from './pages/auth/ResetPassword';
-import Dashboard from './pages/user/Dashboard';
-import BuildPizza from './pages/user/BuildPizza';
-import Checkout from './pages/user/Checkout';
-import MyOrders from './pages/user/MyOrders';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import Inventory from './pages/admin/Inventory';
-import Orders from './pages/admin/Orders';
+
+// Route-level code splitting keeps the initial bundle small.
+const Login = lazy(() => import('./pages/auth/Login'));
+const Register = lazy(() => import('./pages/auth/Register'));
+const VerifyEmail = lazy(() => import('./pages/auth/VerifyEmail'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
+const Home = lazy(() => import('./pages/user/Home'));
+const Menu = lazy(() => import('./pages/user/Menu'));
+const PizzaDetails = lazy(() => import('./pages/user/PizzaDetails'));
+const BuildPizza = lazy(() => import('./pages/user/BuildPizza'));
+const Cart = lazy(() => import('./pages/user/Cart'));
+const Checkout = lazy(() => import('./pages/user/Checkout'));
+const MyOrders = lazy(() => import('./pages/user/MyOrders'));
+const Profile = lazy(() => import('./pages/user/Profile'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const Inventory = lazy(() => import('./pages/admin/Inventory'));
+const Orders = lazy(() => import('./pages/admin/Orders'));
+const Products = lazy(() => import('./pages/admin/Products'));
+const Users = lazy(() => import('./pages/admin/Users'));
+const Settings = lazy(() => import('./pages/admin/Settings'));
 import './index.css';
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
+  const location = useLocation();
+  const isAdminArea = location.pathname.startsWith('/admin');
 
   if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '64px' }}>
-        <span style={{ animation: 'spin 2s linear infinite', display: 'inline-block' }}>🍕</span>
-      </div>
-    );
+    return <LoadingState message="Warming up the oven…" />;
   }
 
   return (
     <>
-      <Navbar />
-      <Routes>
-        <Route path="/login" element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/dashboard'} /> : <Login />} />
-        <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <Register />} />
-        <Route path="/verify-email/:token" element={<VerifyEmail />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <a href="#main-content" className="skip-link">Skip to main content</a>
 
-        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/build-pizza" element={<ProtectedRoute><BuildPizza /></ProtectedRoute>} />
-        <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-        <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+      {/* Admin routes render their own shell (sidebar + top bar). */}
+      {!isAdminArea && <Navbar />}
 
-        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-        <Route path="/admin/inventory" element={<AdminRoute><Inventory /></AdminRoute>} />
-        <Route path="/admin/orders" element={<AdminRoute><Orders /></AdminRoute>} />
+      <main id="main-content">
+        <Suspense fallback={<LoadingState message="Loading page…" />}>
+          <Routes>
+            <Route
+              path="/login"
+              element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace /> : <Login />}
+            />
+            <Route
+              path="/register"
+              element={user ? <Navigate to={user.role === 'admin' ? '/admin' : '/home'} replace /> : <Register />}
+            />
+            <Route path="/verify-email/:token" element={<VerifyEmail />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-        <Route path="*" element={<Navigate to="/login" />} />
-      </Routes>
+            <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Menu /></ProtectedRoute>} />
+            <Route path="/pizza/:id" element={<ProtectedRoute><PizzaDetails /></ProtectedRoute>} />
+            <Route path="/build-pizza" element={<ProtectedRoute><BuildPizza /></ProtectedRoute>} />
+            <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+            <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+            <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
+            <Route path="/admin" element={<AdminRoute><AdminShell /></AdminRoute>}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="inventory" element={<Inventory />} />
+              <Route path="products" element={<Products />} />
+              <Route path="users" element={<Users />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </main>
+
+      {!isAdminArea && <Footer />}
     </>
   );
 };
 
-const CloseButton = ({ closeToast }) => (
-  <i
-    onClick={closeToast}
-    style={{
-      cursor: 'pointer',
-      fontSize: '20px',
-      padding: '0 10px',
-      fontStyle: 'normal',
-      fontWeight: 'bold'
-    }}
-  >
-    ✕
-  </i>
-);
+/**
+ * Notification host.
+ *
+ * Lifecycle: `toast.success(...)` → toast enters → visible for `autoClose`
+ * ms → library plays the exit transition → node is removed from the DOM.
+ * The exit transition is CSS-animation driven, so global styles must never
+ * override `animation` on `.Toastify__toast` (see the TOASTS block in
+ * index.css) or notifications would get stuck on screen forever.
+ */
+const ToastHost = () => {
+  const { theme } = useTheme();
+
+  return (
+    <ToastContainer
+      position="top-right"
+      autoClose={4000}
+      limit={3}
+      newestOnTop
+      closeOnClick
+      pauseOnHover
+      pauseOnFocusLoss={false}
+      draggable
+      rtl={false}
+      theme={theme === 'dark' ? 'dark' : 'light'}
+      aria-label="Notifications"
+    />
+  );
+};
 
 const App = () => (
   <Router>
-    <AuthProvider>
-      <AppRoutes />
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        theme="dark"
-        closeButton={<CloseButton />} // Passing the component directly
-        newestOnTop
-        pauseOnHover
-      />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CartProvider>
+          <ErrorBoundary>
+            <AppRoutes />
+            <ToastHost />
+          </ErrorBoundary>
+        </CartProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </Router>
 );
-
 
 export default App;

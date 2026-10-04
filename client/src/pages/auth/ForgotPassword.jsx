@@ -25,12 +25,10 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      const res = await forgotPassword({ email: trimmedEmail });
-      console.log('Forgot password response:', res);
+      await forgotPassword({ email: trimmedEmail });
       setSent(true);
       toast.success('Reset link sent! Check your inbox and spam folder.');
     } catch (err) {
-      console.error('Forgot password error:', err.response);
       const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
       toast.error(msg);
     } finally {
@@ -52,14 +50,13 @@ const ForgotPassword = () => {
             <div className="auth-message success">
               If an account exists with <strong>{email}</strong>, a password reset link has been sent.
               <br /><br />
-              <span style={{ fontSize: '13px', color: '#666' }}>
+              <span className="auth-hint">
                 ⚠️ Don't see it? Check your <strong>spam / junk</strong> folder.
               </span>
             </div>
-            <div className="auth-links" style={{ marginTop: '16px' }}>
+            <div className="auth-links is-spaced-sm">
               <button
-                className="auth-submit-btn"
-                style={{ marginBottom: '12px' }}
+                className="auth-submit-btn auth-inline-btn"
                 onClick={() => { setSent(false); setEmail(''); }}
               >
                 Try a different email
@@ -91,7 +88,7 @@ const ForgotPassword = () => {
               {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
 
-            <div className="auth-links" style={{ marginTop: '20px' }}>
+            <div className="auth-links is-spaced-lg">
               <Link to="/login">Back to Login</Link>
             </div>
           </form>

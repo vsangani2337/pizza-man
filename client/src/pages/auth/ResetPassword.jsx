@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { resetPassword } from '../../services/api';
+import { validatePassword } from '../../utils/validation';
 import { toast } from 'react-toastify';
 import './Auth.css';
 
@@ -18,9 +19,9 @@ const ResetPassword = () => {
     const newPassword = e.target['new-password'].value.trim();
     const confirmPwd = e.target['confirm-new-password'].value.trim();
 
-    // Validate length first
-    if (newPassword.length < 6) {
-      return toast.error('Password must be at least 6 characters');
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) {
+      return toast.error(passwordError);
     }
 
     // Then validate match
@@ -62,7 +63,7 @@ const ResetPassword = () => {
                 id="new-password"
                 type="password"
                 className="form-input"
-                placeholder="Min 6 characters"
+                placeholder="Min. 8 characters with a letter & number"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -83,12 +84,7 @@ const ResetPassword = () => {
 
             {/* Live match indicator — shows while typing */}
             {confirmPassword.length > 0 && (
-              <p style={{
-                fontSize: '13px',
-                marginTop: '-8px',
-                marginBottom: '12px',
-                color: password === confirmPassword ? '#22c55e' : '#ef4444',
-              }}>
+              <p className={`auth-match ${password === confirmPassword ? 'is-ok' : 'is-bad'}`}>
                 {password === confirmPassword ? '✓ Passwords match' : '✗ Passwords do not match'}
               </p>
             )}

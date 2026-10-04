@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { loginUser } from '../../services/api';
+import { loginUser, resendVerification } from '../../services/api';
 import { toast } from 'react-toastify';
 import './Auth.css';
 
@@ -9,6 +9,8 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [unverified, setUnverified] = useState(false);
+  const [resendState, setResendState] = useState('idle');
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -21,9 +23,28 @@ const Login = () => {
       toast.success('Welcome back!', { autoClose: 2000 });
       navigate(data.user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed' , { autoClose: 2000 });
+      const payload = err.response?.data;
+      if (err.response?.status === 403 && payload?.requiresVerification) {
+        setUnverified(true);
+        setResendState('idle');
+        toast.error(payload.message || 'Please verify your email first');
+      } else {
+        toast.error(payload?.message || 'Login failed', { autoClose: 2000 });
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendState('sending');
+    try {
+      const { data } = await resendVerification(email.trim());
+      toast.success(data.message || 'Verification email sent');
+      setResendState('sent');
+    } catch (err) {
+      setResendState('idle');
+      toast.error(err.response?.data?.message || 'Could not send the email');
     }
   };
 
@@ -31,15 +52,14 @@ const Login = () => {
     <div className="auth-page">
       {/* LEFT SIDE */}
       <div className="auth-decorative">
-        <h2 className="auth-tagline">Wood-fired perfection,<br />delivered.</h2>
-        <p className="auth-tagline-subtitle">Sign in to track your orders, re-order your favorites, and earn rewards with every slice.</p>
+        <h2 className="auth-tagline">Straight from the oven to<br />your door.</h2>
+        <p className="auth-tagline-subtitle">Track your delivery live, reorder your favorites in one tap, and earn a free slice along the way.</p>
       </div>
 
       {/* RIGHT SIDE */}
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="auth-logo-icon">P</div>
-          <h1>Pizza Master</h1>
+          <h1>Pizza Man</h1>
           <p>Welcome back! Please enter your details.</p>
         </div>
 
@@ -78,7 +98,28 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="auth-links" style={{ marginTop: '16px' }}>
+        {unverified && (
+          <div className="auth-message error" role="alert">
+            <strong>Email not verified yet.</strong>
+            <p>
+              We can send a fresh link to <strong>{email}</strong>.
+            </p>
+            <button
+              type="button"
+              className="auth-resend-btn"
+              onClick={handleResend}
+              disabled={resendState !== 'idle'}
+            >
+              {resendState === 'sending'
+                ? 'Sending…'
+                : resendState === 'sent'
+                  ? 'Email sent ✓'
+                  : 'Resend verification email'}
+            </button>
+          </div>
+        )}
+
+        <div className="auth-links is-spaced-sm">
           <Link to="/forgot-password">Forgot password?</Link>
         </div>
         <div className="auth-divider">or</div>

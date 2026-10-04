@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { registerUser } from '../../services/api';
+import { registerUser, resendVerification } from '../../services/api';
+import { validatePassword } from '../../utils/validation';
 import { toast } from 'react-toastify';
 import './Auth.css';
 
@@ -8,16 +9,18 @@ const Register = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [resendState, setResendState] = useState('idle');
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const passwordError = validatePassword(form.password);
+    if (passwordError) {
+      return toast.error(passwordError);
+    }
     if (form.password !== form.confirmPassword) {
       return toast.error('Passwords do not match');
-    }
-    if (form.password.length < 6) {
-      return toast.error('Password must be at least 6 characters');
     }
     setLoading(true);
     try {
@@ -31,6 +34,18 @@ const Register = () => {
     }
   };
 
+  const handleResend = async () => {
+    setResendState('sending');
+    try {
+      const { data } = await resendVerification(form.email);
+      toast.success(data.message || 'Verification email sent');
+      setResendState('sent');
+    } catch (err) {
+      setResendState('idle');
+      toast.error(err.response?.data?.message || 'Could not send the email');
+    }
+  };
+
   if (success) {
     return (
       <div className="auth-page">
@@ -40,11 +55,27 @@ const Register = () => {
         </div>
         <div className="auth-card">
           <div className="auth-logo">
-            <div className="auth-logo-icon">P</div>
             <h1>Check Your Email</h1>
             <p>We've sent a verification link to <strong>{form.email}</strong></p>
           </div>
-          <div className="auth-links" style={{ marginTop: '20px' }}>
+          <div className="auth-message success">
+            Didn't see it? Check your <strong>spam / junk</strong> folder, or send it again.
+          </div>
+          <div className="auth-links is-spaced-lg">
+            <button
+              type="button"
+              className="auth-resend-btn"
+              onClick={handleResend}
+              disabled={resendState !== 'idle'}
+            >
+              {resendState === 'sending'
+                ? 'Sending…'
+                : resendState === 'sent'
+                  ? 'Email sent ✓'
+                  : 'Resend verification email'}
+            </button>
+          </div>
+          <div className="auth-links is-spaced-sm">
             <Link to="/login">Return to login</Link>
           </div>
         </div>
@@ -98,7 +129,7 @@ const Register = () => {
               name="password"
               type="password"
               className="form-input"
-              placeholder="Min. 6 characters"
+              placeholder="Min. 8 characters with a letter & number"
               value={form.password}
               onChange={handleChange}
               required
