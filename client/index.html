@@ -4,8 +4,18 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍕</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Pizzara - Build and order your custom pizza online" />
-    <title>Pizzara - Custom Pizza Delivery</title>
+    <meta name="description" content="Pizza Man - Build and order your custom pizza online" />
+    <title>Pizza Man - Custom Pizza Delivery</title>
+    <script>
+      // Apply the stored theme before first paint to avoid a flash of the wrong theme.
+      try {
+        var t = localStorage.getItem('pizza-theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
